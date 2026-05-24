@@ -1,7 +1,5 @@
-// Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyCwQaTiMDd2HVtOvrIdfcPe5pI-22BcMHw",
   authDomain: "smartchat-80fce.firebaseapp.com",
@@ -12,55 +10,76 @@ const firebaseConfig = {
   measurementId: "G-WYZ9KPVM5Q"
 };
 
-// Initialize Firebase
 initializeApp(firebaseConfig);
 
-// Gemini API Key
+// PUT YOUR REAL GEMINI API KEY HERE
 const API_KEY = "AIzaSyCzoUMTvrQG4Ib93gGGKA_qh3GDP8M0V0Y";
 
-// Send Message
-async function sendMessage(){
+async function sendMessage() {
 
   const input = document.getElementById("user-input");
   const chatBox = document.getElementById("chat-box");
 
-  const userText = input.value;
+  const userText = input.value.trim();
 
-  if(userText === "") return;
+  if (!userText) return;
 
+  // Show user message
   chatBox.innerHTML += `
     <div class="message user">${userText}</div>
   `;
 
   input.value = "";
 
-  const response = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
-    {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        contents:[
-          {
-            parts:[
-              { text:userText }
-            ]
-          }
-        ]
-      })
-    }
-  );
+  // Loading message
+  const loadingDiv = document.createElement("div");
+  loadingDiv.className = "message bot";
+  loadingDiv.innerText = "Typing...";
+  chatBox.appendChild(loadingDiv);
 
-  const data = await response.json();
+  try {
 
-  const botReply =
-    data.candidates[0].content.parts[0].text;
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: userText
+                }
+              ]
+            }
+          ]
+        })
+      }
+    );
 
-  chatBox.innerHTML += `
-    <div class="message bot">${botReply}</div>
-  `;
+    const data = await response.json();
+
+    console.log(data);
+
+    loadingDiv.remove();
+
+    const botReply =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "No response from AI.";
+
+    chatBox.innerHTML += `
+      <div class="message bot">${botReply}</div>
+    `;
+
+  } catch (error) {
+
+    loadingDiv.innerText = "Error connecting to AI.";
+
+    console.error(error);
+  }
 }
 
 window.sendMessage = sendMessage;
