@@ -16,7 +16,7 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 
 // Gemini API Key
-const API_KEY = "PASTE_GEMINI_API_KEY";
+const API_KEY = "AIzaSyCzoUMTvrQG4Ib93gGGKA_qh3GDP8M0V0Y";
 
 // Send Message
 async function sendMessage(){
