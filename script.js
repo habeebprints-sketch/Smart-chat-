@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCwQaTiMDd2HVtOvrIdfcPe5pI-22BcMHw",
+  apiKey: "AIzaSyBPvPCl820oSDvJFO9XhkTHwq5DpIn4SOY",
   authDomain: "smartchat-80fce.firebaseapp.com",
   projectId: "smartchat-80fce",
   storageBucket: "smartchat-80fce.firebasestorage.app",
@@ -39,47 +39,52 @@ async function sendMessage() {
 
   try {
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [
+const response = await fetch(
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: "user",
+          parts: [
             {
-              parts: [
-                {
-                  text: userText
-                }
-              ]
+              text: userText
             }
           ]
-        })
-      }
-    );
-
-    const data = await response.json();
-
-    console.log(data);
-
-    loadingDiv.remove();
-
-    const botReply =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No response from AI.";
-
-    chatBox.innerHTML += `
-      <div class="message bot">${botReply}</div>
-    `;
-
-  } catch (error) {
-
-    loadingDiv.innerText = "Error connecting to AI.";
-
-    console.error(error);
+        }
+      ]
+    })
   }
-}
+);
 
-window.sendMessage = sendMessage;
+const data = await response.json();
+
+console.log(data);
+
+loadingDiv.remove();
+
+if (data.candidates &&
+    data.candidates.length > 0 &&
+    data.candidates[0].content.parts.length > 0) {
+
+  const botReply =
+    data.candidates[0].content.parts[0].text;
+
+  chatBox.innerHTML += `
+    <div class="message bot">${botReply}</div>
+  `;
+
+} else {
+
+  chatBox.innerHTML += `
+    <div class="message bot">
+      AI could not respond.
+    </div>
+  `;
+
+  console.log(data);
+}
