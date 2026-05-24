@@ -13,7 +13,7 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 
 // PUT YOUR GEMINI API KEY HERE
-const API_KEY = "AIzaSyBPvPCl820oSDvJFO9XhkTHwq5DpIn4SOY";
+const API_KEY = "AIzaSyDPbjpKpODzrtMKPzlFvopg5X3UiuiFLqc";
 
 const sendBtn = document.getElementById("send-btn");
 
