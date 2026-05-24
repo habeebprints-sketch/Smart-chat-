@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBPvPCl820oSDvJFO9XhkTHwq5DpIn4SOY",
+  apiKey: "AIzaSyCwQaTiMDd2HVtOvrIdfcPe5pI-22BcMHw",
   authDomain: "smartchat-80fce.firebaseapp.com",
   projectId: "smartchat-80fce",
   storageBucket: "smartchat-80fce.firebasestorage.app",
@@ -12,8 +12,12 @@ const firebaseConfig = {
 
 initializeApp(firebaseConfig);
 
-// PUT YOUR REAL GEMINI API KEY HERE
-const API_KEY = "AIzaSyCzoUMTvrQG4Ib93gGGKA_qh3GDP8M0V0Y";
+// PUT YOUR GEMINI API KEY HERE
+const API_KEY = "AIzaSyBPvPCl820oSDvJFO9XhkTHwq5DpIn4SOY";
+
+const sendBtn = document.getElementById("send-btn");
+
+sendBtn.addEventListener("click", sendMessage);
 
 async function sendMessage() {
 
@@ -24,67 +28,58 @@ async function sendMessage() {
 
   if (!userText) return;
 
-  // Show user message
   chatBox.innerHTML += `
     <div class="message user">${userText}</div>
   `;
 
   input.value = "";
 
-  // Loading message
-  const loadingDiv = document.createElement("div");
-  loadingDiv.className = "message bot";
-  loadingDiv.innerText = "Typing...";
-  chatBox.appendChild(loadingDiv);
+  const loading = document.createElement("div");
+  loading.className = "message bot";
+  loading.innerText = "Typing...";
+  chatBox.appendChild(loading);
 
   try {
 
-const response = await fetch(
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: "user",
-          parts: [
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
             {
-              text: userText
+              parts: [
+                {
+                  text: userText
+                }
+              ]
             }
           ]
-        }
-      ]
-    })
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    loading.remove();
+
+    console.log(data);
+
+    const reply =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "AI failed to answer.";
+
+    chatBox.innerHTML += `
+      <div class="message bot">${reply}</div>
+    `;
+
+  } catch (error) {
+
+    loading.innerText = "Connection error.";
+
+    console.error(error);
   }
-);
-
-const data = await response.json();
-
-console.log(data);
-
-loadingDiv.remove();
-
-if (data.candidates &&
-    data.candidates.length > 0 &&
-    data.candidates[0].content.parts.length > 0) {
-
-  const botReply =
-    data.candidates[0].content.parts[0].text;
-
-  chatBox.innerHTML += `
-    <div class="message bot">${botReply}</div>
-  `;
-
-} else {
-
-  chatBox.innerHTML += `
-    <div class="message bot">
-      AI could not respond.
-    </div>
-  `;
-
-  console.log(data);
 }
